@@ -82,9 +82,21 @@ class EquipamentosController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Equipamento $equipamento,Request $request)
     {
         //
+        if (! $request->has('cancel') ){
+            $equipamento->tipo = $request->input('tipo');
+            $equipamento->modelo = $request->input('modelo');
+            $equipamento->fabricante = $request->input('fabricante');
+            $equipamento->update();
+            \Session::flash('message', 'Equipamento atualizado com sucesso !');
+        }
+        else
+        { 
+            $request->session()->flash('message', 'Operação cancelada pelo usuário'); 
+        }
+        return redirect()->route('equipamento.index'); 
     }
 
     /**
@@ -93,8 +105,16 @@ class EquipamentosController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Equipamento $equipamento, Request $request)
     {
-        //
+        if (! $request->has('cancel') ){
+            $equipamento->delete();
+            \Session::flash('message', 'Equipamento excluído com sucesso !');
+        }
+        else
+        { 
+            $request->session()->flash('message', 'Operação cancelada pelo usuário'); 
+        }
+        return redirect()->route('equipamento.index'); 
     }
 }

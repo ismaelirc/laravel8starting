@@ -29,10 +29,10 @@
                     <td>
                         <ul class="list-inline">
                             <li>
-                            <a href="">Editar</a>
+                                <a href="{{route('equipamento.edit', ['equipamento' => $equipamento])}}">Editar</a>
                             </li>
                             <li>
-                            <a href="">Deletar</a>
+                                <a href="{{route('equipamento.delete', ['equipamento' => $equipamento])}}">Deletar</a>
                             </li>
                         </ul>
                     </td>
