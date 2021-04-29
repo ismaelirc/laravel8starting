@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Equipamento;
+use App\Http\Requests\EquipamentoFormRequest;
 
 class EquipamentosController extends Controller
 {
@@ -14,8 +15,8 @@ class EquipamentosController extends Controller
      */
     public function index()
     {
-        $equipamentos = Equipamento::all();
-        return view('equipamentos.index', compact('equipamentos'));
+        $equipamentos = Equipamento::paginate(10);
+        return view('equipamentos.index',['equipamentos' => $equipamentos]);
     }
 
     /**
@@ -25,10 +26,11 @@ class EquipamentosController extends Controller
      */
     public function create()
     {
-        //
-        return view('equipamentos.create', 
-                    ['action'=>route('equipamento.store'), 
-                    'method'=>'post']);
+        if(!session()->has('redirect_to'))
+        {
+           session(['redirect_to' => url()->previous()]);
+        }
+        return view('equipamentos.create', ['action'=>route('equipamento.store'), 'method'=>'post']);
     }
 
     /**
@@ -37,10 +39,9 @@ class EquipamentosController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(EquipamentoFormRequest $request)
     {
         //
-        $url = $request->get('redirect_to', route('equipamento.index'));
         if (! $request->has('cancel') ){
             $dados = $request->all();
             Equipamento::create($dados);
@@ -50,7 +51,7 @@ class EquipamentosController extends Controller
         { 
             $request->session()->flash('message', 'Operação cancelada pelo usuário'); 
         }
-        return redirect()->to($url);
+        return redirect()->to(session()->pull('redirect_to'));
     }
 
     /**
@@ -82,7 +83,7 @@ class EquipamentosController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Equipamento $equipamento,Request $request)
+    public function update(Equipamento $equipamento,EquipamentoFormRequest $request)
     {
         //
         if (! $request->has('cancel') ){
@@ -90,13 +91,13 @@ class EquipamentosController extends Controller
             $equipamento->modelo = $request->input('modelo');
             $equipamento->fabricante = $request->input('fabricante');
             $equipamento->update();
-            \Session::flash('message', 'Equipamento atualizado com sucesso !');
+            $request->session()->flash('message', 'Equipamento atualizado com sucesso !');
         }
         else
         { 
             $request->session()->flash('message', 'Operação cancelada pelo usuário'); 
         }
-        return redirect()->route('equipamento.index'); 
+        return redirect()->to(session()->pull('redirect_to'));
     }
 
     /**
@@ -108,13 +109,14 @@ class EquipamentosController extends Controller
     public function destroy(Equipamento $equipamento, Request $request)
     {
         if (! $request->has('cancel') ){
+            $strEqp = $equipamento->tipo . ', modelo: ' . $equipamento->modelo . ', fabricante:' . $equipamento->fabricante . '}';
             $equipamento->delete();
-            \Session::flash('message', 'Equipamento excluído com sucesso !');
+            $request->session()->flash('message', '{equipamento: ' . $strEqp . ' excluído com sucesso !');
         }
         else
         { 
             $request->session()->flash('message', 'Operação cancelada pelo usuário'); 
         }
-        return redirect()->route('equipamento.index'); 
+        return redirect()->to(session()->pull('redirect_to'));
     }
 }
